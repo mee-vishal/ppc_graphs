@@ -15,16 +15,22 @@
             margin: 0;
             background-color: #f4f4f9;
         }
+        .chart-container {
+            position: relative;
+            width: 90%; /* Adjusts width to make it responsive */
+            max-width: 800px; /* Ensures it doesn't grow too large */
+        }
         canvas {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             background: #ffffff;
             border-radius: 8px;
-            padding: 20px;
         }
     </style>
 </head>
 <body>
-    <canvas id="salesChart" width="700" height="300"></canvas>
+    <div class="chart-container">
+        <canvas id="salesChart"></canvas>
+    </div>
     <script>
         // Generate random sales data for 12 months
         const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -110,7 +116,8 @@
                 ]
             },
             options: {
-                responsive: true,
+                responsive: true, // Makes the chart responsive
+                maintainAspectRatio: true, // Maintains the aspect ratio
                 plugins: {
                     legend: {
                         position: 'top',
