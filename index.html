@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        canvas {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="salesChart" width="700" height="300"></canvas>
+    <script>
+        // Generate random sales data for 12 months
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const sales = Array.from({ length: 12 }, () => Math.floor(Math.random() * 100) + 50);
+
+        // Function to calculate moving average
+        function movingAverage(data, period) {
+            return data.map((_, i) => {
+                if (i < period - 1) return null; // Not enough data for the period
+                const slice = data.slice(i - period + 1, i + 1);
+                return slice.reduce((a, b) => a + b, 0) / period;
+            });
+        }
+
+        // Calculate moving averages
+        const ma3 = movingAverage(sales, 3); // 3-month moving average
+        const ma6 = movingAverage(sales, 6); // 6-month moving average
+
+        // Calculate linear regression
+        function linearRegression(x, y) {
+            const n = x.length;
+            const sumX = x.reduce((a, b) => a + b, 0);
+            const sumY = y.reduce((a, b) => a + b, 0);
+            const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
+            const sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
+
+            const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX ** 2);
+            const intercept = (sumY - slope * sumX) / n;
+
+            return x.map(xi => slope * xi + intercept);
+        }
+
+        const regressionLine = linearRegression(
+            Array.from({ length: sales.length }, (_, i) => i + 1), // x-values (1 to 12)
+            sales
+        );
+
+        // Create the chart
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months, // X-axis labels
+                datasets: [
+                    {
+                        label: 'Sales',
+                        data: sales,
+                        borderColor: 'blue',
+                        backgroundColor: 'blue',
+                        fill: false,
+                        pointRadius: 5,
+                        borderWidth: 2,
+                    },
+                    {
+                        label: '3-Month Moving Avg',
+                        data: ma3,
+                        borderColor: 'orange',
+                        backgroundColor: 'orange',
+                        fill: false,
+                        borderDash: [5, 5],
+                        pointRadius: 5,
+                        borderWidth: 2,
+                    },
+                    {
+                        label: '6-Month Moving Avg',
+                        data: ma6,
+                        borderColor: 'green',
+                        backgroundColor: 'green',
+                        fill: false,
+                        borderDash: [10, 5],
+                        pointRadius: 5,
+                        borderWidth: 2,
+                    },
+                    {
+                        label: 'Linear Regression',
+                        data: regressionLine,
+                        borderColor: 'red',
+                        backgroundColor: 'red',
+                        fill: false,
+                        pointRadius: 0,
+                        borderWidth: 2,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Months'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Sales'
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
